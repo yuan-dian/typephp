@@ -134,10 +134,15 @@ class DeclaredScalarPropertyReadTest extends BaseTest
         }
 
         $code = file_get_contents($outputFile);
-        // The read is materialized as a Variant, so the division still has to
-        // be converted instead of being treated as an already native float.
+        // The read converts to the declared scalar at the read site and the
+        // operand is materialized in that storage, so the division needs no
+        // further conversion.
         $this->assertStringContainsString('typephp_read_property_scoped(', $code);
-        $this->assertStringContainsString('php::toFloat(((tmp_var_', $code);
+        $this->assertMatchesRegularExpression(
+            '/tmp_var_\d+ = php::toFloat\(typephp_read_property_scoped\(/',
+            $code
+        );
+        $this->assertStringNotContainsString('php::toFloat(((tmp_var_', $code);
         $this->assertStringNotContainsString('attrFloat(get_persistent_prop(', $code);
     }
 

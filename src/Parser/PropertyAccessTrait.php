@@ -1332,19 +1332,13 @@ trait PropertyAccessTrait
         // Resolve the declaration before the hoisting path runs. Without this,
         // an ordinary variable receiver has no definition here and skips
         // hoisting entirely, which turns a stable slot reference into a fresh
-        // offset lookup on every read.
-        //
-        // Only a plain int/float declaration qualifies. Bool and string keep
-        // their previous lowering, and a readonly or hooked property keeps its
-        // own path: the readonly branch reads through the dynamic value source,
-        // so materializing its result as a native scalar while the temporary
-        // stays a Variant would drop the conversion the surrounding expression
-        // still needs.
+        // offset lookup on every read. Only a plain int/float declaration
+        // qualifies; bool and string keep their previous lowering, and a hooked
+        // or virtual property keeps its own path.
         $scalarDef = $def;
         if ($scalarDef === null && $property instanceof Node\Identifier) {
             $declared = $this->findReadablePropertyDefinition($expr);
             if ($declared !== null
-                && !$declared->isReadonly()
                 && $declared->getter === null
                 && $declared->setter === null
                 && !$declared->virtual
@@ -1363,13 +1357,7 @@ trait PropertyAccessTrait
                 $getProperty,
             );
             if ($typedFetch !== null) {
-                // A readonly read keeps the dynamic value source and is
-                // materialized as a Variant, so advertising a native scalar
-                // type would strip the conversion the surrounding expression
-                // still needs.
-                if (!$scalarDef->isReadonly()) {
-                    $expr->setAttribute(self::ATTR_LOWERED_TYPE, $scalarDef->type);
-                }
+                $expr->setAttribute(self::ATTR_LOWERED_TYPE, $scalarDef->type);
                 return $typedFetch;
             }
         }

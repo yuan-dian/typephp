@@ -878,6 +878,14 @@ trait BinaryOpTrait
             ) {
                 return $def->type;
             }
+            // A readonly read is converted back to the declared scalar at the
+            // read site, so the operand already carries native storage even
+            // though its value source stays dynamic. Materializing it as a
+            // Variant would contradict the type recorded for the expression.
+            $lowered = $this->getLoweredExpressionType($expr);
+            if ($lowered === Type::INT || $lowered === Type::FLOAT) {
+                return $lowered;
+            }
             return Type::VAR;
         }
 

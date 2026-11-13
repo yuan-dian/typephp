@@ -41,11 +41,7 @@ class ReadonlyTypedPropertyReadTest extends BaseTest
         // initialized from it directly.
         $this->assertStringContainsString('php::toInt(typephp_read_property_scoped(this_,', $code);
         $this->assertStringContainsString('php::toFloat(typephp_read_property_scoped(this_,', $code);
-        // The read keeps its Variant storage, so the discriminant compares
-        // through PHP's loose equality instead of a native switch. The integer
-        // suffix follows the platform's zend_long width (L on LP64, LL on
-        // Windows), so match either spelling.
-        $this->assertMatchesRegularExpression('/php::equals\(tmp_var_0, 0L+\)/', $code);
+        $this->assertStringContainsString('switch (tmp_var_0)', $code);
         // Readonly properties stay out of the hoisted scalar reference path.
         $this->assertStringNotContainsString('_object_prop_this___status', $code);
         $this->assertStringNotContainsString('_object_prop_this___ratio', $code);
